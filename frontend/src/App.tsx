@@ -15,7 +15,7 @@ import { ReportsView } from './views/ReportsView';
 import { SettingsView } from './views/SettingsView';
 import { PublicInvoiceView } from './views/PublicInvoiceView';
 
-import { Invoice } from './types';
+import { Invoice, ShopSettings } from './types';
 import { api } from './services/api';
 
 const AppContent: React.FC = () => {
@@ -23,16 +23,23 @@ const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [shopName, setShopName] = useState<string>('GODAVARI TRADERS');
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
 
-  useEffect(() => {
-    // Fetch shop settings for brand title
+  const fetchSettings = () => {
     api.getSettings()
       .then((res) => {
-        if (res.success && res.settings?.shop_name) {
-          setShopName(res.settings.shop_name);
+        if (res.success && res.settings) {
+          setShopSettings(res.settings);
+          if (res.settings.shop_name) {
+            setShopName(res.settings.shop_name);
+          }
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchSettings();
   }, []);
 
   if (isLoading) {
@@ -96,6 +103,7 @@ const AppContent: React.FC = () => {
           {currentView === 'customers' && (
             <CustomersView
               onViewInvoice={setSelectedInvoice}
+              shopSettings={shopSettings}
             />
           )}
 
@@ -104,7 +112,9 @@ const AppContent: React.FC = () => {
           )}
 
           {currentView === 'settings' && (
-            <SettingsView />
+            <SettingsView
+              onSaved={fetchSettings}
+            />
           )}
         </main>
       </div>

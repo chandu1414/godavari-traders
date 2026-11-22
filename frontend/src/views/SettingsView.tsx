@@ -14,7 +14,11 @@ import {
 import { ShopSettings } from '../types';
 import { api } from '../services/api';
 
-export const SettingsView: React.FC = () => {
+interface SettingsViewProps {
+  onSaved?: () => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ onSaved }) => {
   const [settings, setSettings] = useState<Partial<ShopSettings>>({
     shop_name: 'GODAVARI TRADERS',
     owner_name: 'Prathik Yadav',
@@ -72,6 +76,7 @@ export const SettingsView: React.FC = () => {
       const res = await api.updateSettings(settings);
       if (res.success) {
         setSaveSuccess(true);
+        if (onSaved) onSaved();
         setTimeout(() => setSaveSuccess(false), 3500);
       }
     } catch (e: any) {

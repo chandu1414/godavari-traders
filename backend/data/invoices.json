@@ -604,5 +604,79 @@
     "_id": "86c71dca-4934-49e1-8c58-c250b40e77f3",
     "created_at": "2026-11-22T12:18:14.297583",
     "updated_at": "2026-11-22T12:18:14.297588"
+  },
+  {
+    "invoice_number": "GT-2026-1009",
+    "public_token": "gt-token-1009-tU_udF9AVJx5uWrr",
+    "date": "2026-11-22T12:33:44.206288",
+    "customer": {
+      "name": "B. Rama Krishna (Builder)",
+      "phone": "+91 98888 77665",
+      "whatsapp": "919888877665",
+      "address": "Site #12, Siddapu Road, Sadashivpet"
+    },
+    "items": [
+      {
+        "product_id": "04404972-678b-408f-b0c8-7fd3ea052184",
+        "product_name": "20mm Blue Granite Jelly / Metal",
+        "brand": "",
+        "category": "General",
+        "unit": "Brass",
+        "quantity": 5.0,
+        "rate": 2400.0,
+        "amount": 12000.0,
+        "gst_rate": 5.0,
+        "hsn_code": "2517",
+        "cgst_amount": 285.0,
+        "sgst_amount": 285.0
+      }
+    ],
+    "subtotal": 12000.0,
+    "discount_type": "percent",
+    "discount_value": 5.0,
+    "discount_amount": 600.0,
+    "is_gst_invoice": true,
+    "tax_breakup": {
+      "taxable_amount": 11400.0,
+      "cgst_amount": 285.0,
+      "sgst_amount": 285.0,
+      "total_tax": 570.0
+    },
+    "delivery": {
+      "is_delivery": false,
+      "delivery_charge": 350.0,
+      "delivery_address": "Site #12, Siddapu Road, Sadashivpet",
+      "instructions": "Deliver before 12 Noon"
+    },
+    "round_off": 0.0,
+    "grand_total": 12320.0,
+    "payment_mode": "UPI",
+    "payment_status": "PAID",
+    "amount_paid": 12320.0,
+    "balance_due": 0.0,
+    "created_by": "admin",
+    "notes": "",
+    "shop_snapshot": {
+      "shop_name": "GODAVARI TRADERS",
+      "owner_name": "Prathik Yadav",
+      "tagline": "Wholesale & Retail Building Materials - Cement, Steel, Stone Dust & Sand",
+      "address_line1": "Siddapu Road",
+      "address_line2": "Sadashivpet",
+      "city": "Sadashivpet",
+      "district": "Sangareddy",
+      "state": "Telangana",
+      "pincode": "502291",
+      "phone": "+91 98480 22334",
+      "gstin": "36AAAAA0000A1Z5",
+      "upi_id": "godavaritraders@okaxis",
+      "bank_name": "State Bank of India",
+      "bank_account_no": "38291029381",
+      "bank_ifsc": "SBIN0001234",
+      "footer_notes": "Thank you for building with Godavari Traders!",
+      "terms_conditions": "1. Goods once sold will not be accepted or exchanged without prior inspection.\n2. Delivery of materials is subject to road and site unloading clearance.\n3. Interest @ 18% per annum will be charged on unpaid invoices after 15 days.\n4. Disputes subject to Sangareddy jurisdiction only."
+    },
+    "_id": "4a519f30-a4b6-4c65-8092-9038a545c9c1",
+    "created_at": "2026-11-22T12:33:44.206377",
+    "updated_at": "2026-11-22T12:33:44.206383"
   }
 ]

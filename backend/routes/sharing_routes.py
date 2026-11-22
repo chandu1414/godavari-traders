@@ -16,6 +16,15 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
     
     view_url = f"{public_base_url}/invoice/view/{token}"
 
+    # Fetch live shop settings for contact info
+    settings_col = get_db().get_collection("settings")
+    settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
+    shop_name = settings.get("shop_name", "GODAVARI TRADERS")
+    contact_phone = settings.get("phone") or settings.get("whatsapp_number") or "+91 98480 22334"
+    tagline = settings.get("tagline", "Wholesale & Retail Building Materials")
+    shop_city = settings.get("city", "Sadashivpet")
+    address = [settings.get("address_line1"), settings.get("city")].filter(None) if hasattr([settings.get("address_line1")], 'filter') else ", ".join(filter(None, [settings.get("address_line1"), settings.get("city")]))
+
     items_text = []
     for it in invoice.get("items", [])[:5]:
         items_text.append(f"• {it.get('product_name')}: {it.get('quantity')} {it.get('unit')} @ ₹{it.get('rate'):,.2f}")
@@ -28,9 +37,9 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
     bill_title = "TAX INVOICE" if has_tax else "RETAIL INVOICE"
 
     msg = (
-        f"🏛️ *GODAVARI TRADERS*\n"
-        f"Wholesale & Retail Building Materials\n"
-        f"Cement | TMT Steel | White Stone Dust | Sand\n"
+        f"🏛️ *{shop_name}*\n"
+        f"{tagline}\n"
+        f"{address}\n"
         f"----------------------------------------\n"
         f"📄 *{bill_title}: {inv_num}*\n"
         f"📅 Date: {date_str}\n"
@@ -50,8 +59,8 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
         f"----------------------------------------\n"
         f"🔗 *View & Download Official PDF Bill:*\n"
         f"{view_url}\n\n"
-        f"Thank you for choosing Godavari Traders!\n"
-        f"📞 Contact / Support: +91 98480 22334"
+        f"Thank you for choosing {shop_name}!\n"
+        f"📞 Contact / Support: {contact_phone}"
     )
 
     return msg, view_url
@@ -70,7 +79,6 @@ def create_whatsapp_link():
         return jsonify({"success": False, "message": "Invoice not found."}), 404
 
     phone = target_phone or inv.get("customer", {}).get("whatsapp") or inv.get("customer", {}).get("phone", "")
-    # Sanitize phone number (remove +, spaces, dashes)
     clean_phone = "".join(ch for ch in phone if ch.isdigit())
     if len(clean_phone) == 10:
         clean_phone = "91" + clean_phone
@@ -78,7 +86,6 @@ def create_whatsapp_link():
     message, view_url = generate_whatsapp_message(inv, base_url)
     encoded_message = urllib.parse.quote(message)
 
-    # Standard WhatsApp Web / Direct URL
     wa_direct_url = f"https://wa.me/{clean_phone}?text={encoded_message}" if clean_phone else f"https://wa.me/?text={encoded_message}"
 
     return jsonify({
@@ -102,16 +109,19 @@ def send_sms():
     if not inv:
         return jsonify({"success": False, "message": "Invoice not found."}), 404
 
+    settings_col = get_db().get_collection("settings")
+    settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
+    shop_name = settings.get("shop_name", "Godavari Traders")
+
     phone = target_phone or inv.get("customer", {}).get("phone", "")
     token = inv.get("public_token", "")
     view_url = f"{base_url}/invoice/view/{token}"
 
     sms_text = (
-        f"Godavari Traders: Bill {inv.get('invoice_number')} of Rs.{inv.get('grand_total'):,.2f} is generated. "
+        f"{shop_name}: Bill {inv.get('invoice_number')} of Rs.{inv.get('grand_total'):,.2f} is generated. "
         f"View/Download PDF invoice: {view_url} . Thank you!"
     )
 
-    # Check if Twilio / MSG91 credentials are configured in environment
     twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
     twilio_auth = os.environ.get("TWILIO_AUTH_TOKEN")
     twilio_from = os.environ.get("TWILIO_PHONE_NUMBER")

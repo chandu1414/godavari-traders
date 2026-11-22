@@ -24,15 +24,17 @@ import {
   TrendingUp,
   Wallet
 } from 'lucide-react';
-import { Customer, Invoice, KhataTransaction, KhataStatementEntry } from '../types';
+import { Customer, Invoice, KhataTransaction, KhataStatementEntry, ShopSettings } from '../types';
 import { api } from '../services/api';
 
 interface CustomersViewProps {
   onViewInvoice: (invoice: Invoice) => void;
+  shopSettings?: ShopSettings | null;
 }
 
-export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice }) => {
+export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice, shopSettings: propShopSettings }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(propShopSettings || null);
   const [stats, setStats] = useState({
     total_due: 0,
     total_advance: 0,
@@ -89,7 +91,19 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice }) =
 
   useEffect(() => {
     loadCustomers();
+    loadSettings();
   }, [filterType]);
+
+  const loadSettings = async () => {
+    try {
+      const res = await api.getSettings();
+      if (res.success && res.settings) {
+        setShopSettings(res.settings);
+      }
+    } catch (e) {
+      console.error('Failed to load shop settings in Khata', e);
+    }
+  };
 
   const loadCustomers = async () => {
     try {
@@ -342,21 +356,29 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice }) =
     }
   };
 
-  // Send WhatsApp Reminder
+  // Send WhatsApp Reminder with DYNAMIC SHOP DETAILS
   const handleSendWhatsAppReminder = (c: Customer) => {
     const due = c.outstanding_due || 0;
     const cleanPhone = (c.whatsapp || c.phone || '').replace(/[^0-9]/g, '');
     const targetPhone = cleanPhone.startsWith('91') && cleanPhone.length > 10 ? cleanPhone : `91${cleanPhone.replace(/^0+/, '')}`;
 
+    // Read live shop settings (dynamic, never hardcoded!)
+    const shopName = shopSettings?.shop_name || 'GODAVARI TRADERS';
+    const city = shopSettings?.city || 'Sadashivpet';
+    const address = [shopSettings?.address_line1, shopSettings?.address_line2, shopSettings?.city].filter(Boolean).join(', ') || 'Siddapu Road, Sadashivpet';
+    const upiId = shopSettings?.upi_id || 'godavaritraders@okaxis';
+    const ownerName = shopSettings?.owner_name || 'Prathik Yadav';
+    const shopContact = shopSettings?.phone || shopSettings?.whatsapp_number || '+91 98480 22334';
+
     const text = 
       `🙏 *Namaste ${c.name} garu,*\n\n` +
-      `This is a gentle payment reminder from *GODAVARI TRADERS*, Sadashivpet.\n\n` +
+      `This is a gentle payment reminder from *${shopName}*, ${city}.\n\n` +
       `📌 *Current Khata Balance Due:* ₹${due.toLocaleString('en-IN')}\n\n` +
       `You can clear your payment via UPI to:\n` +
-      `👉 *UPI ID:* godavaritraders@okaxis\n` +
-      `Or visit our shop at Siddapu Road, Sadashivpet.\n\n` +
-      `For bills or queries: +91 98480 22334\n` +
-      `_Thank you for your business!_`;
+      `👉 *UPI ID:* ${upiId}\n` +
+      `Or visit our shop at ${address}.\n\n` +
+      `For bills or queries: ${shopContact}\n` +
+      `_${ownerName ? `– ${ownerName}, ` : ''}${shopName}_`;
 
     window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -965,7 +987,6 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice }) =
             </div>
 
             <form onSubmit={handleSubmitPayment} className="p-5 space-y-4">
-              {/* Customer Info Box */}
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
                 <div>
                   <span className="font-extrabold text-sm text-slate-900 block">{selectedCustomer.name}</span>
@@ -1352,7 +1373,10 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice }) =
 
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
               <span className="text-slate-500 text-[11px]">
-                Shop UPI: <span className="font-mono font-bold text-slate-800">godavaritraders@okaxis</span>
+                Shop UPI: <span className="font-mono font-bold text-slate-800">{shopSettings?.upi_id || 'godavaritraders@okaxis'}</span>
+                {shopSettings?.phone ? (
+                  <span className="ml-3 text-slate-400">Phone: <span className="font-mono font-bold text-slate-700">{shopSettings.phone}</span></span>
+                ) : null}
               </span>
               <button
                 onClick={() => setStatementModalOpen(false)}
