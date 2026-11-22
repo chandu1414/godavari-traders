@@ -6,6 +6,20 @@ import threading
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+try:
+    from dotenv import load_dotenv
+    # Load backend/.env or root .env
+    backend_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if os.path.exists(backend_env):
+        load_dotenv(backend_env)
+    elif os.path.exists(root_env):
+        load_dotenv(root_env)
+    else:
+        load_dotenv()
+except Exception:
+    pass
+
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -206,6 +220,48 @@ class JSONCollection:
         return len(self.find(query))
 
 
+class MongoCollectionWrapper:
+    """Wraps PyMongo collection so find() returns a list, handles sorting, and count_documents defaults safely."""
+    def __init__(self, raw_collection):
+        self.raw = raw_collection
+        self.name = raw_collection.name
+
+    def find(self, query: Optional[Dict[str, Any]] = None, sort: Optional[List[tuple]] = None) -> List[Dict[str, Any]]:
+        query = query or {}
+        cursor = self.raw.find(query)
+        if sort:
+            cursor = cursor.sort(sort)
+        docs = list(cursor)
+        for d in docs:
+            if "_id" in d and hasattr(d["_id"], "__str__") and not isinstance(d["_id"], str):
+                d["_id"] = str(d["_id"])
+        return docs
+
+    def find_one(self, query: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+        query = query or {}
+        d = self.raw.find_one(query)
+        if d and "_id" in d and hasattr(d["_id"], "__str__") and not isinstance(d["_id"], str):
+            d["_id"] = str(d["_id"])
+        return d
+
+    def insert_one(self, doc: Dict[str, Any]) -> str:
+        d = dict(doc)
+        if "_id" not in d:
+            d["_id"] = str(uuid.uuid4())
+        res = self.raw.insert_one(d)
+        doc["_id"] = str(res.inserted_id)
+        return doc["_id"]
+
+    def update_one(self, query: Dict[str, Any], update: Dict[str, Any], upsert: bool = False):
+        return self.raw.update_one(query, update, upsert=upsert)
+
+    def delete_one(self, query: Dict[str, Any]):
+        return self.raw.delete_one(query)
+
+    def count_documents(self, query: Optional[Dict[str, Any]] = None) -> int:
+        return self.raw.count_documents(query or {})
+
+
 class DatabaseManager:
     """Manages collection access with transparent fallback between MongoDB and JSON persistence."""
     def __init__(self):
@@ -236,7 +292,9 @@ class DatabaseManager:
 
     def get_collection(self, name: str):
         if self.is_mongo and self.db is not None:
-            return self.db[name]
+            if name not in self._collections:
+                self._collections[name] = MongoCollectionWrapper(self.db[name])
+            return self._collections[name]
         if name not in self._collections:
             self._collections[name] = JSONCollection(name)
         return self._collections[name]

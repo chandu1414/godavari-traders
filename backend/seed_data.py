@@ -49,7 +49,7 @@ def seed_database():
         print("[Seed] Seeded Cashier User: cashier / Billing@2026")
 
     # 3. Seed Realistic Construction Materials Catalogue
-    if products_col.count_documents() == 0:
+    if products_col.count_documents({}) == 0:
         sample_products = [
             # Cement
             {
@@ -290,7 +290,7 @@ def seed_database():
         print(f"[Seed] Added {len(sample_products)} construction materials to product catalogue.")
 
     # 4. Seed Sample Customers
-    if customers_col.count_documents() == 0:
+    if customers_col.count_documents({}) == 0:
         sample_customers = [
             {
                 "name": "M. Satyanarayana (Contractor)",
@@ -327,7 +327,7 @@ def seed_database():
         print(f"[Seed] Added {len(sample_customers)} sample customers.")
 
     # 5. Seed Initial Real Recent Invoices
-    if invoices_col.count_documents() == 0:
+    if invoices_col.count_documents({}) == 0:
         now = datetime.utcnow()
         sample_invoices = [
             {
