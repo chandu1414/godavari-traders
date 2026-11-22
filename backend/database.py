@@ -209,7 +209,7 @@ class DatabaseManager:
         if mongo_uri:
             try:
                 import pymongo
-                client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=1500)
+                client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=8000)
                 client.server_info()  # trigger connection check
                 self.mongo_client = client
                 db_name = os.environ.get("MONGO_DB_NAME", "godavari_traders")
