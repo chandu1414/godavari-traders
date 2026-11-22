@@ -366,7 +366,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
 
       {/* RIGHT: POS CART & BILLING PANEL (Slide-over on mobile, persistent on desktop) */}
       <div className={`
-        fixed lg:static inset-0 z-40 lg:z-auto bg-slate-900/60 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none
+        fixed lg:static inset-0 z-50 lg:z-auto bg-slate-900/60 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none
         flex justify-end transition-opacity duration-200
         ${showMobileCart ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto'}
       `}>
@@ -377,7 +377,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
         `}>
           
           {/* Cart Header */}
-          <div className="p-4 bg-brand-900 text-white flex items-center justify-between shrink-0">
+          <div className="p-3.5 sm:p-4 bg-brand-900 text-white flex items-center justify-between shrink-0 shadow-sm">
             <div className="flex items-center space-x-2">
               <ShoppingCart className="w-5 h-5 text-amber-400" />
               <h3 className="font-extrabold text-sm sm:text-base">Current Bill Cart</h3>
@@ -387,100 +387,107 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
             </div>
             <button
               onClick={() => setShowMobileCart(false)}
-              className="lg:hidden text-blue-200 hover:text-white"
+              className="lg:hidden px-3 py-1 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg text-xs transition"
             >
               Close &times;
             </button>
           </div>
 
-          {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {cart.length === 0 ? (
-              <div className="text-center py-12 px-4 text-slate-400">
-                <ShoppingCart className="w-12 h-12 mx-auto mb-2 text-slate-300 stroke-1" />
-                <p className="text-xs font-medium">Cart is empty</p>
-                <p className="text-[11px] text-slate-400 mt-1">Select construction materials from the catalogue to start billing.</p>
-              </div>
-            ) : (
-              cart.map((item) => (
-                <div 
-                  key={item.product_id}
-                  className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs flex flex-col space-y-1.5"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-bold text-slate-900 leading-tight">{item.product_name}</p>
-                      <span className="text-[10px] text-slate-500 font-mono">
-                        Rate: ₹{item.rate} / {item.unit}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item.product_id)}
-                      className="text-slate-400 hover:text-rose-600 transition p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Quantity Stepper & Item Total */}
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                    <div className="flex items-center space-x-1.5 bg-white border border-slate-300 rounded-lg p-0.5">
-                      <button
-                        onClick={() => updateQuantity(item.product_id, -1)}
-                        className="w-5 h-5 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => setQuantity(item.product_id, Number(e.target.value))}
-                        className="w-10 text-center font-bold text-xs bg-transparent focus:outline-none"
-                      />
-                      <button
-                        onClick={() => updateQuantity(item.product_id, 1)}
-                        className="w-5 h-5 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="font-mono font-black text-slate-950 text-xs">
-                        ₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Customer & Billing Options Drawer */}
-          <div className="border-t border-slate-200 bg-white p-3 space-y-3 shrink-0 text-xs">
+          {/* Unified Scrollable Body: Cart items + Customer details + Breakdown */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
             
+            {/* Cart Items List */}
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Materials Billed ({cart.length})
+              </h4>
+              {cart.length === 0 ? (
+                <div className="text-center py-10 px-4 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <ShoppingCart className="w-10 h-10 mx-auto mb-2 text-slate-300 stroke-1" />
+                  <p className="text-xs font-medium">Cart is empty</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Select materials from catalogue to add.</p>
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div 
+                    key={item.product_id}
+                    className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs flex flex-col space-y-1.5"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-bold text-slate-900 leading-tight">{item.product_name}</p>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          Rate: ₹{item.rate} / {item.unit}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.product_id)}
+                        className="text-slate-400 hover:text-rose-600 transition p-1"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Quantity Stepper & Item Total */}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                      <div className="flex items-center space-x-1.5 bg-white border border-slate-300 rounded-lg p-0.5">
+                        <button
+                          onClick={() => updateQuantity(item.product_id, -1)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded font-bold"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => setQuantity(item.product_id, Number(e.target.value))}
+                          className="w-10 text-center font-bold text-xs bg-transparent focus:outline-none"
+                        />
+                        <button
+                          onClick={() => updateQuantity(item.product_id, 1)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded font-bold"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-mono font-black text-slate-950 text-xs">
+                          ₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
             {/* Customer Inputs */}
-            <div className="space-y-1.5">
+            <div className="pt-2 border-t border-slate-200 space-y-2 text-xs">
+              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Customer & Site Delivery
+              </h4>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="text"
                   placeholder="Customer Name"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-brand-900 focus:bg-white"
+                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-1 focus:ring-brand-900 focus:bg-white"
                 />
                 <input
                   type="tel"
-                  placeholder="Mobile / WhatsApp"
+                  placeholder="Mobile Number"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-brand-900 focus:bg-white"
+                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-1 focus:ring-brand-900 focus:bg-white"
                 />
               </div>
 
               {/* Delivery Toggle */}
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between p-2 bg-amber-50/40 rounded-xl border border-amber-200/60">
                 <label className="flex items-center space-x-1.5 cursor-pointer">
                   <input
                     type="checkbox"
@@ -488,7 +495,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
                     onChange={(e) => setIsDelivery(e.target.checked)}
                     className="rounded text-brand-900 focus:ring-brand-900"
                   />
-                  <span className="text-[11px] font-semibold text-slate-700 flex items-center space-x-1">
+                  <span className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
                     <Truck className="w-3.5 h-3.5 text-amber-600" />
                     <span>Site Delivery</span>
                   </span>
@@ -502,7 +509,7 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
                       placeholder="Delivery Fee"
                       value={deliveryCharge || ''}
                       onChange={(e) => setDeliveryCharge(Number(e.target.value))}
-                      className="w-20 px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-xs font-mono"
+                      className="w-20 px-2 py-0.5 bg-white border border-slate-200 rounded text-xs font-mono"
                     />
                   </div>
                 )}
@@ -514,12 +521,12 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
                   placeholder="Site Unloading Address / Instructions"
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className="w-full px-2.5 py-1 bg-amber-50/50 border border-amber-200 rounded-lg text-[11px]"
+                  className="w-full px-2.5 py-1.5 bg-amber-50/50 border border-amber-200 rounded-xl text-[11px]"
                 />
               )}
 
               {/* GST & Discount Toggles */}
-              <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+              <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center space-x-1.5 cursor-pointer">
                   <input
                     type="checkbox"
@@ -550,28 +557,33 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
               </div>
 
               {/* Payment Mode Pills */}
-              <div className="flex items-center space-x-1 pt-1">
-                {['Cash', 'UPI', 'Bank', 'Khata/Credit'].map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => {
-                      setPaymentMode(mode);
-                      if (mode === 'Khata/Credit') {
-                        setPaymentStatus('PENDING');
-                      } else {
-                        setPaymentStatus('PAID');
-                      }
-                    }}
-                    className={`flex-1 py-1 rounded text-[10px] font-bold transition ${
-                      paymentMode === mode
-                        ? 'bg-brand-900 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {mode}
-                  </button>
-                ))}
+              <div className="pt-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Payment Mode
+                </span>
+                <div className="flex items-center space-x-1">
+                  {['Cash', 'UPI', 'Bank', 'Khata/Credit'].map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => {
+                        setPaymentMode(mode);
+                        if (mode === 'Khata/Credit') {
+                          setPaymentStatus('PENDING');
+                        } else {
+                          setPaymentStatus('PAID');
+                        }
+                      }}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition ${
+                        paymentMode === mode
+                          ? 'bg-brand-900 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -599,30 +611,35 @@ export const POSBillingView: React.FC<POSBillingViewProps> = ({ onInvoiceCreated
                   <span className="font-mono">₹{delivery.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center pt-1.5 border-t border-slate-200 font-extrabold text-sm text-slate-900">
-                <span>Grand Total:</span>
-                <span className="font-mono text-base text-brand-900">
-                  ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
+            </div>
+
+          </div>
+
+          {/* PINNED STICKY BOTTOM ACTION BAR (Always visible above navigation) */}
+          <div className="border-t border-slate-200 bg-white p-3.5 sm:p-4 space-y-2 shrink-0 shadow-2xl pb-6 lg:pb-3">
+            <div className="flex justify-between items-center font-extrabold text-sm text-slate-900">
+              <span className="text-xs uppercase tracking-wider text-slate-500">Total Payable:</span>
+              <span className="font-mono text-lg font-black text-emerald-700">
+                ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </span>
             </div>
 
             {errorMsg && (
-              <div className="p-2 bg-rose-50 border border-rose-200 text-rose-700 text-[10px] rounded font-medium">
+              <div className="p-2 bg-rose-50 border border-rose-200 text-rose-700 text-[11px] rounded font-medium">
                 {errorMsg}
               </div>
             )}
 
-            {/* Generate Invoice Button */}
+            {/* Big Green Generate & Share Bill Button */}
             <button
               onClick={handleGenerateInvoice}
               disabled={isSubmitting || cart.length === 0}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-md flex items-center justify-center space-x-2 transition active:scale-[0.99] disabled:opacity-50"
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-xl shadow-lg flex items-center justify-center space-x-2 transition active:scale-[0.98] disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Generating Invoice...' : 'Generate & Share Bill'}</span>
+              <CheckCircle className="w-5 h-5 text-emerald-200" />
+              <span>{isSubmitting ? 'Generating Invoice...' : 'Generate & Share Bill (WhatsApp)'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
           </div>
 
         </div>
