@@ -140,8 +140,14 @@ def create_invoice():
 
     grand_total = calc["grand_total"]
     payment_mode = data.get("payment_mode", "Cash")  # Cash, UPI, Bank Transfer, Cheque, Credit
-    payment_status = data.get("payment_status", "PAID")  # PAID, PARTIAL, PENDING
-    amount_paid = float(data.get("amount_paid", grand_total if payment_status == "PAID" else 0.0))
+    raw_amount_paid = data.get("amount_paid")
+    
+    # Calculate amount paid and balance due with precision
+    if raw_amount_paid is not None:
+        amount_paid = max(0.0, min(float(raw_amount_paid), grand_total))
+    else:
+        amount_paid = grand_total if data.get("payment_status") == "PAID" else 0.0
+
     balance_due = max(0.0, round(grand_total - amount_paid, 2))
 
     if balance_due == 0:
@@ -216,11 +222,14 @@ def create_invoice():
         if prod_id:
             products_col.update_one({"_id": prod_id}, {"$inc": {"stock": -it["quantity"]}})
 
-    # Update or create customer record
+    # Update or create customer record & record payment transaction
     if cust_phone:
         customers_col = db.get_collection("customers")
         existing_cust = customers_col.find_one({"phone": cust_phone})
         if existing_cust:
+            cust_id = existing_cust.get("_id")
+            prev_due = float(existing_cust.get("outstanding_due") or 0.0)
+            new_due = round(prev_due + balance_due, 2)
             customers_col.update_one(
                 {"phone": cust_phone},
                 {
@@ -237,14 +246,35 @@ def create_invoice():
                 }
             )
         else:
-            customers_col.insert_one({
+            new_due = balance_due
+            cust_id = customers_col.insert_one({
                 "name": cust_name,
                 "phone": cust_phone,
                 "whatsapp": cust_whatsapp,
                 "address": cust_address,
                 "total_purchases": grand_total,
                 "total_invoices": 1,
-                "outstanding_due": balance_due
+                "outstanding_due": balance_due,
+                "created_at": now_iso,
+                "updated_at": now_iso
+            })
+
+        # If any payment was made at checkout (e.g. ₹40,000 on a ₹60,000 bill),
+        # record the payment transaction in customer ledger
+        if amount_paid > 0:
+            tx_col = db.get_collection("customer_transactions")
+            tx_col.insert_one({
+                "customer_id": cust_id,
+                "customer_phone": cust_phone,
+                "customer_name": cust_name,
+                "type": "PAYMENT",
+                "amount": amount_paid,
+                "payment_mode": payment_mode,
+                "reference": invoice_number,
+                "notes": f"Down payment for Bill #{invoice_number} ({payment_mode})",
+                "date": now_iso,
+                "balance_after": new_due,
+                "created_at": now_iso
             })
 
     # Log audit entry

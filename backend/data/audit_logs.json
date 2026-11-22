@@ -76,5 +76,82 @@
     "_id": "61721aa8-0d0f-466d-bd42-6ed408deb31e",
     "created_at": "2026-11-22T12:33:44.221047",
     "updated_at": "2026-11-22T12:33:44.221060"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1010",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T12:46:54.134142",
+    "_id": "a54e96bc-951b-4e58-afe5-a0a62070e9de",
+    "created_at": "2026-11-22T12:46:54.146746",
+    "updated_at": "2026-11-22T12:46:54.146758"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1011",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T12:58:33.577062",
+    "_id": "e106a158-539c-427e-aec4-b602f54345bd",
+    "created_at": "2026-11-22T12:58:33.596518",
+    "updated_at": "2026-11-22T12:58:33.596532"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1012",
+    "grand_total": 60000.0,
+    "customer": "Chandu (Contractor)",
+    "user": "admin",
+    "timestamp": "2026-11-22T12:58:33.683428",
+    "_id": "1f9549af-5593-4d2f-8333-bed78c4f2c86",
+    "created_at": "2026-11-22T12:58:33.733841",
+    "updated_at": "2026-11-22T12:58:33.733853"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1013",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T12:59:33.514800",
+    "_id": "1bfdbb58-30ee-461d-ab3f-122c064137ba",
+    "created_at": "2026-11-22T12:59:33.534061",
+    "updated_at": "2026-11-22T12:59:33.534077"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1014",
+    "grand_total": 60000.0,
+    "customer": "Chandu (Contractor)",
+    "user": "admin",
+    "timestamp": "2026-11-22T12:59:33.626879",
+    "_id": "6234eaf5-621d-4477-9c7c-ee3c70441df6",
+    "created_at": "2026-11-22T12:59:33.676910",
+    "updated_at": "2026-11-22T12:59:33.676923"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1015",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T13:00:04.695571",
+    "_id": "e8f27bcb-f017-499f-98a0-d04f012f0d97",
+    "created_at": "2026-11-22T13:00:04.712870",
+    "updated_at": "2026-11-22T13:00:04.712885"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1016",
+    "grand_total": 60000.0,
+    "customer": "Chandu (Contractor)",
+    "user": "admin",
+    "timestamp": "2026-11-22T13:00:04.791321",
+    "_id": "a493b813-6580-4433-aa4a-bb952c50c487",
+    "created_at": "2026-11-22T13:00:04.839762",
+    "updated_at": "2026-11-22T13:00:04.839774"
   }
 ]

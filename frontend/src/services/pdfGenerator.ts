@@ -22,8 +22,13 @@ export function buildWhatsAppUrl(invoice: Invoice, directPhone?: string): string
     `📄 Invoice No: *${invoice.invoice_number}*\n` +
     `👤 Customer: *${invoice.customer.name}*\n` +
     `📅 Date: ${new Date(invoice.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}\n` +
-    `💰 Grand Total: *₹${invoice.grand_total.toLocaleString('en-IN')}* (${invoice.payment_status})\n` +
-    (invoice.balance_due > 0 ? `⚠️ Balance Due: *₹${invoice.balance_due.toLocaleString('en-IN')}*\n` : '') +
+    `💰 Grand Total: *₹${invoice.grand_total.toLocaleString('en-IN')}*\n` +
+    (invoice.amount_paid > 0 && invoice.balance_due > 0
+      ? `💵 Paid Now: *₹${invoice.amount_paid.toLocaleString('en-IN')}* (${invoice.payment_mode})\n📒 Added to Khata (Udhaar): *₹${invoice.balance_due.toLocaleString('en-IN')}*\n💳 Status: *PARTIALLY PAID*\n`
+      : invoice.balance_due > 0
+      ? `📒 Added to Khata (Udhaar): *₹${invoice.balance_due.toLocaleString('en-IN')}*\n💳 Status: *KHATA / UDHAAR*\n`
+      : `✅ Paid in Full: *₹${invoice.grand_total.toLocaleString('en-IN')}* (${invoice.payment_mode})\n💳 Status: *PAID*\n`
+    ) +
     `----------------------------------------\n` +
     `🔗 *Official PDF Bill & Digital View:*\n` +
     `${window.location.origin}/invoice/view/${invoice.public_token}\n\n` +

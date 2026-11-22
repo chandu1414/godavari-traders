@@ -49,11 +49,28 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
         f"{items_block}\n"
         f"----------------------------------------\n"
         f"💰 *Grand Total: ₹{grand_total:,.2f}*\n"
-        f"💳 Status: *{payment_status}*\n"
     )
 
-    if invoice.get("balance_due", 0) > 0:
-        msg += f"⚠️ Balance Due: *₹{invoice.get('balance_due'):,.2f}*\n"
+    amount_paid = float(invoice.get("amount_paid") or 0.0)
+    balance_due = float(invoice.get("balance_due") or 0.0)
+    pay_mode = invoice.get("payment_mode", "Cash")
+
+    if amount_paid > 0 and balance_due > 0:
+        msg += (
+            f"💵 *Paid Now: ₹{amount_paid:,.2f}* ({pay_mode})\n"
+            f"📒 *Remaining to Khata (Udhaar): ₹{balance_due:,.2f}*\n"
+            f"💳 Status: *PARTIALLY PAID*\n"
+        )
+    elif balance_due > 0:
+        msg += (
+            f"📒 *Recorded to Khata (Udhaar): ₹{balance_due:,.2f}*\n"
+            f"💳 Status: *KHATA / UDHAAR*\n"
+        )
+    else:
+        msg += (
+            f"✅ *Paid in Full: ₹{grand_total:,.2f}* ({pay_mode})\n"
+            f"💳 Status: *PAID*\n"
+        )
 
     msg += (
         f"----------------------------------------\n"

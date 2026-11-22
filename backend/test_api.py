@@ -149,7 +149,65 @@ def run_tests():
     customers = res.get_json().get("customers", [])
     assert_test("Customer B. Rama Krishna exists in directory", any("Rama Krishna" in c.get("name", "") for c in customers))
 
-    # 11. Reports & Analytics
+    # 11. Partial Payment / Split Billing & Khata Due Test (User Scenario: Bill ₹60,000 -> Pay ₹40,000 Cash, ₹20,000 Khata)
+    import time
+    test_phone = f"+91 99988 {int(time.time() * 1000) % 100000:05d}"
+    partial_bill_payload = {
+        "customer": {
+            "name": "Chandu (Contractor)",
+            "phone": test_phone,
+            "whatsapp": "919998877766",
+            "address": "Sadashivpet Main Road"
+        },
+        "items": [
+            {
+                "product_id": first_product["_id"],
+                "product_name": first_product["name"],
+                "unit": first_product["unit"],
+                "rate": 1000.0,
+                "quantity": 60,
+                "gst_rate": 0.0
+            }
+        ],
+        "discount_type": "fixed",
+        "discount_value": 0.0,
+        "is_gst_invoice": False,
+        "delivery_charge": 0.0,
+        "payment_mode": "Cash",
+        "payment_status": "PARTIAL",
+        "amount_paid": 40000.0,
+        "notes": "Customer paid 40000 cash, 20000 to Khata"
+    }
+    res = client.post("/api/billing/create-invoice", json=partial_bill_payload, headers=headers)
+    assert_test("Create partial split invoice responds 201", res.status_code == 201)
+    split_inv = res.get_json().get("invoice", {})
+    assert_test("Split invoice grand total is 60,000", split_inv.get("grand_total") == 60000.0)
+    assert_test("Split invoice amount_paid is 40,000", split_inv.get("amount_paid") == 40000.0)
+    assert_test("Split invoice balance_due is 20,000", split_inv.get("balance_due") == 20000.0)
+    assert_test("Split invoice status is PARTIAL", split_inv.get("payment_status") == "PARTIAL")
+
+    # Verify customer Khata record
+    res = client.get(f"/api/customers/{test_phone}", headers=headers)
+    assert_test("Get partial bill customer ledger responds 200", res.status_code == 200)
+    cust_data = res.get_json().get("customer", {})
+    assert_test("Customer Khata outstanding_due is 20,000", cust_data.get("outstanding_due") == 20000.0)
+
+    # Verify statement ledger balances
+    res = client.get(f"/api/customers/{test_phone}/statement", headers=headers)
+    assert_test("Get customer statement responds 200", res.status_code == 200)
+    stmt = res.get_json()
+    assert_test("Statement net_due equals 20,000", stmt.get("net_due") == 20000.0)
+    assert_test("Statement total_billed equals 60,000", stmt.get("total_billed") == 60000.0)
+    assert_test("Statement total_paid equals 40,000", stmt.get("total_paid") == 40000.0)
+
+    # Verify WhatsApp message reflects both paid now and remaining Khata
+    wa_res = client.post("/api/sharing/whatsapp-link", json={"invoice_id": split_inv["invoice_number"]}, headers=headers)
+    assert_test("WhatsApp link for partial bill responds 200", wa_res.status_code == 200)
+    wa_msg = wa_res.get_json().get("message", "")
+    assert_test("WhatsApp message contains 40,000 paid now", "40,000" in wa_msg)
+    assert_test("WhatsApp message contains 20,000 remaining to Khata", "20,000" in wa_msg)
+
+    # 12. Reports & Analytics
     res = client.get("/api/reports/dashboard", headers=headers)
     assert_test("Dashboard reports responds 200", res.status_code == 200)
     metrics = res.get_json().get("metrics", {})

@@ -278,11 +278,14 @@ def get_full_statement(identifier):
             "payment_status": inv.get("payment_status"),
             "payment_mode": inv.get("payment_mode", "Credit"),
             "balance_due": inv.get("balance_due", 0.0),
+            "amount_paid": inv.get("amount_paid", 0.0),
             "public_token": inv.get("public_token"),
             "items_summary": ", ".join([f"{it.get('name', '')} ({it.get('quantity', '')} {it.get('unit', '')})" for it in inv.get("items", [])[:3]])
         })
 
     # Transactions (Payments & Manual Debits)
+    tx_references = {tx.get("reference") for tx in transactions if tx.get("reference")}
+
     for tx in transactions:
         is_payment = tx.get("type") in ["PAYMENT", "CREDIT"] or (tx.get("type") == "OPENING_BALANCE" and tx.get("is_credit"))
         unified_entries.append({
@@ -297,6 +300,24 @@ def get_full_statement(identifier):
             "reference": tx.get("reference"),
             "balance_after": tx.get("balance_after")
         })
+
+    # For any invoices that had amount_paid > 0 but were not yet explicitly stored in customer_transactions:
+    for inv in invoices:
+        inv_num = inv.get("invoice_number")
+        inv_paid = float(inv.get("amount_paid") or 0.0)
+        if inv_paid > 0 and inv_num not in tx_references:
+            unified_entries.append({
+                "id": f"tx-inv-downpay-{inv_num}",
+                "entry_type": "TRANSACTION",
+                "type": "PAYMENT",
+                "date": inv.get("date"),
+                "description": f"Paid at billing for Bill #{inv_num} ({inv.get('payment_mode', 'Cash')})",
+                "debit_amount": 0.0,
+                "credit_amount": inv_paid,
+                "payment_mode": inv.get("payment_mode", "Cash"),
+                "reference": inv_num,
+                "balance_after": None
+            })
 
     # Sort descending by date
     unified_entries.sort(key=lambda x: str(x.get("date", "")), reverse=True)

@@ -66,7 +66,18 @@ class JSONCollection:
                     return False
                 continue
             
-            doc_val = doc.get(key)
+            if "." in key:
+                parts = key.split(".")
+                curr = doc
+                for p in parts:
+                    if isinstance(curr, dict):
+                        curr = curr.get(p)
+                    else:
+                        curr = None
+                        break
+                doc_val = curr
+            else:
+                doc_val = doc.get(key)
             if isinstance(val, dict):
                 # Operators like $in, $gte, $lte, $regex, $ne
                 if "$in" in val and doc_val not in val["$in"]:
