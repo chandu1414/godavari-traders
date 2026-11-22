@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "user_owner_001",
+    "username": "admin",
+    "email": "owner@godavaritraders.com",
+    "full_name": "Prathik Yadav (Owner)",
+    "role": "admin",
+    "phone": "+91 98480 22334",
+    "password": "20b11a0369b509d5d586a8ff1e2a3ef7$2b9e63c82f7bfd8ceab94f460abf0bfcdbfc1b61062900890a6ce5d77089a6c4",
+    "is_active": true,
+    "created_at": "2026-11-22T10:55:37.026866",
+    "updated_at": "2026-11-22T10:55:37.026901"
+  },
+  {
+    "_id": "user_staff_002",
+    "username": "cashier",
+    "email": "billing@godavaritraders.com",
+    "full_name": "Shop Billing Desk",
+    "role": "cashier",
+    "phone": "+91 98480 22335",
+    "password": "e7d762abb44e94964250458618e608c7$7b8b9c4f40c1b8480ab5b22b972c8d8ef2b88974a3b5d1094515a88ea0a09e54",
+    "is_active": true,
+    "created_at": "2026-11-22T10:55:37.145042",
+    "updated_at": "2026-11-22T10:55:37.145068"
+  }
+]

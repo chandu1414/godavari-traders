@@ -1,0 +1,47 @@
+[
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1004",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T10:58:45.518983",
+    "_id": "fd07c542-9d51-43d9-abb7-fb6801a481a1",
+    "created_at": "2026-11-22T10:58:45.528805",
+    "updated_at": "2026-11-22T10:58:45.528815"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1005",
+    "grand_total": 14054.0,
+    "customer": "bharath",
+    "user": "admin",
+    "timestamp": "2026-11-22T11:19:06.475891",
+    "_id": "c16c0204-ba51-40c0-bb89-47c86a2486cc",
+    "created_at": "2026-11-22T11:19:06.510353",
+    "updated_at": "2026-11-22T11:19:06.510364"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1006",
+    "grand_total": 7310.0,
+    "customer": "bharath",
+    "user": "cashier",
+    "timestamp": "2026-11-22T11:32:42.988347",
+    "_id": "4e2ba724-7f0b-4c9a-858a-728c3de3c457",
+    "created_at": "2026-11-22T11:32:43.034108",
+    "updated_at": "2026-11-22T11:32:43.034124"
+  },
+  {
+    "action": "PAYMENT_RECORDED",
+    "invoice_number": "GT-2026-1003",
+    "amount_received": 5600.0,
+    "new_balance": 0.0,
+    "payment_status": "PAID",
+    "received_by": "admin",
+    "timestamp": "2026-11-22T11:39:29.169667",
+    "_id": "44ade118-7a86-4c74-b749-d17c6da72548",
+    "created_at": "2026-11-22T11:39:29.180152",
+    "updated_at": "2026-11-22T11:39:29.180167"
+  }
+]
