@@ -296,7 +296,7 @@ def seed_database():
                 "name": "M. Satyanarayana (Contractor)",
                 "phone": "+91 94401 55667",
                 "whatsapp": "919440155667",
-                "address": "Plot 42, Danavaipeta, Rajahmundry",
+                "address": "Plot 42, Shanti Nagar, Sadashivpet",
                 "total_purchases": 184500.0,
                 "total_invoices": 4,
                 "outstanding_due": 24000.0,
@@ -306,7 +306,7 @@ def seed_database():
                 "name": "Sri Rama Constructions",
                 "phone": "+91 98492 88990",
                 "whatsapp": "919849288990",
-                "address": "Site #5, Morampudi Junction, Rajahmundry",
+                "address": "Site #5, Bypass Road, Sadashivpet",
                 "total_purchases": 320000.0,
                 "total_invoices": 6,
                 "outstanding_due": 0.0,
@@ -316,7 +316,7 @@ def seed_database():
                 "name": "K. Venkata Rao (Home Owner)",
                 "phone": "+91 93910 11223",
                 "whatsapp": "919391011223",
-                "address": "H.No 12-4-8, Tilak Road, Rajahmundry",
+                "address": "H.No 12-4-8, Tilak Road, Sadashivpet",
                 "total_purchases": 74500.0,
                 "total_invoices": 2,
                 "outstanding_due": 5000.0,
@@ -338,7 +338,7 @@ def seed_database():
                     "name": "M. Satyanarayana (Contractor)",
                     "phone": "+91 94401 55667",
                     "whatsapp": "919440155667",
-                    "address": "Plot 42, Danavaipeta, Rajahmundry"
+                    "address": "Plot 42, Shanti Nagar, Sadashivpet"
                 },
                 "items": [
                     {
@@ -376,7 +376,7 @@ def seed_database():
                 "delivery": {
                     "is_delivery": True,
                     "delivery_charge": 1200.0,
-                    "delivery_address": "Plot 42, Danavaipeta, Rajahmundry",
+                    "delivery_address": "Plot 42, Shanti Nagar, Sadashivpet",
                     "instructions": "Unload at rear lot before 4 PM"
                 },
                 "round_off": 0.0,
@@ -396,7 +396,7 @@ def seed_database():
                     "name": "Sri Rama Constructions",
                     "phone": "+91 98492 88990",
                     "whatsapp": "919849288990",
-                    "address": "Site #5, Morampudi Junction, Rajahmundry"
+                    "address": "Site #5, Bypass Road, Sadashivpet"
                 },
                 "items": [
                     {
@@ -434,7 +434,7 @@ def seed_database():
                 "delivery": {
                     "is_delivery": True,
                     "delivery_charge": 2500.0,
-                    "delivery_address": "Site #5, Morampudi Junction, Rajahmundry",
+                    "delivery_address": "Site #5, Bypass Road, Sadashivpet",
                     "instructions": "Crane unloading at site"
                 },
                 "round_off": 0.0,
@@ -454,7 +454,7 @@ def seed_database():
                     "name": "K. Venkata Rao (Home Owner)",
                     "phone": "+91 93910 11223",
                     "whatsapp": "919391011223",
-                    "address": "H.No 12-4-8, Tilak Road, Rajahmundry"
+                    "address": "H.No 12-4-8, Tilak Road, Sadashivpet"
                 },
                 "items": [
                     {
@@ -492,7 +492,7 @@ def seed_database():
                 "delivery": {
                     "is_delivery": True,
                     "delivery_charge": 600.0,
-                    "delivery_address": "H.No 12-4-8, Tilak Road, Rajahmundry",
+                    "delivery_address": "H.No 12-4-8, Tilak Road, Sadashivpet",
                     "instructions": ""
                 },
                 "round_off": 0.0,

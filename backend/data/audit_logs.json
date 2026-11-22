@@ -43,5 +43,16 @@
     "_id": "44ade118-7a86-4c74-b749-d17c6da72548",
     "created_at": "2026-11-22T11:39:29.180152",
     "updated_at": "2026-11-22T11:39:29.180167"
+  },
+  {
+    "action": "CREATE_INVOICE",
+    "invoice_number": "GT-2026-1007",
+    "grand_total": 12320.0,
+    "customer": "B. Rama Krishna (Builder)",
+    "user": "admin",
+    "timestamp": "2026-11-22T11:53:33.211436",
+    "_id": "fdc635ea-dc62-4dbe-8f65-88a3939492ce",
+    "created_at": "2026-11-22T11:53:33.231788",
+    "updated_at": "2026-11-22T11:53:33.231810"
   }
 ]

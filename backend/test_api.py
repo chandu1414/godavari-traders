@@ -90,7 +90,7 @@ def run_tests():
             "name": "B. Rama Krishna (Builder)",
             "phone": "+91 98888 77665",
             "whatsapp": "919888877665",
-            "address": "Site #12, Morampudi, Rajahmundry"
+            "address": "Site #12, Siddapu Road, Sadashivpet"
         },
         "items": [
             {
