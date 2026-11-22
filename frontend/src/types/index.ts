@@ -50,9 +50,46 @@ export interface Customer {
   phone: string;
   whatsapp?: string;
   address?: string;
+  credit_limit?: number;
+  opening_balance?: number;
+  notes?: string;
   total_purchases?: number;
   total_invoices?: number;
   outstanding_due?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface KhataTransaction {
+  _id?: string;
+  customer_id?: string;
+  customer_phone: string;
+  customer_name?: string;
+  type: 'PAYMENT' | 'DEBIT' | 'OPENING_BALANCE';
+  amount: number;
+  payment_mode?: string;
+  reference?: string;
+  notes?: string;
+  date: string;
+  balance_after?: number;
+}
+
+export interface KhataStatementEntry {
+  id?: string;
+  entry_type: 'INVOICE' | 'TRANSACTION';
+  type?: string;
+  invoice_number?: string;
+  date: string;
+  description: string;
+  debit_amount: number;
+  credit_amount: number;
+  payment_status?: string;
+  payment_mode?: string;
+  balance_due?: number;
+  balance_after?: number;
+  reference?: string;
+  public_token?: string;
+  items_summary?: string;
 }
 
 export interface ShopSettings {

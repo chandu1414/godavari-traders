@@ -1,4 +1,4 @@
-import { Product, Customer, Invoice, ShopSettings, User, DashboardMetrics } from '../types';
+import { Product, Customer, Invoice, ShopSettings, User, DashboardMetrics, KhataTransaction } from '../types';
 
 const BASE_URL = '/api';
 
@@ -131,16 +131,84 @@ export const api = {
   getPublicInvoice: (token: string) =>
     request<{ success: boolean; invoice: Invoice }>(`/invoices/public/${token}`),
 
-  // Customers
-  getCustomers: (params?: { search?: string; has_due?: boolean }) => {
+  // Customers & Khata Ledger
+  getCustomers: (params?: { search?: string; filter?: string; has_due?: boolean }) => {
     const query = new URLSearchParams();
     if (params?.search) query.set('search', params.search);
+    if (params?.filter) query.set('filter', params.filter);
     if (params?.has_due) query.set('has_due', 'true');
-    return request<{ success: boolean; count: number; customers: Customer[] }>(`/customers?${query.toString()}`);
+    return request<{
+      success: boolean;
+      count: number;
+      customers: Customer[];
+      stats?: {
+        total_due: number;
+        total_advance: number;
+        total_customers: number;
+        due_accounts_count: number;
+        total_purchases: number;
+      };
+    }>(`/customers?${query.toString()}`);
   },
 
   getCustomerLedger: (phoneOrId: string) =>
-    request<{ success: boolean; customer: Customer; invoices: Invoice[]; invoice_count: number }>(`/customers/${phoneOrId}`),
+    request<{
+      success: boolean;
+      customer: Customer;
+      invoices: Invoice[];
+      transactions?: KhataTransaction[];
+      invoice_count: number;
+      transaction_count?: number;
+    }>(`/customers/${phoneOrId}`),
+
+  getCustomerStatement: (phoneOrId: string) =>
+    request<{
+      success: boolean;
+      customer: Customer;
+      entries: any[];
+      settings?: any;
+      total_billed: number;
+      total_paid: number;
+      net_due: number;
+    }>(`/customers/${phoneOrId}/statement`),
+
+  createCustomer: (customerData: Partial<Customer>) =>
+    request<{ success: boolean; message: string; customer: Customer }>('/customers', {
+      method: 'POST',
+      body: JSON.stringify(customerData),
+    }),
+
+  updateCustomer: (phoneOrId: string, customerData: Partial<Customer>) =>
+    request<{ success: boolean; message: string; customer: Customer }>(`/customers/${phoneOrId}`, {
+      method: 'PUT',
+      body: JSON.stringify(customerData),
+    }),
+
+  deleteCustomer: (phoneOrId: string) =>
+    request<{ success: boolean; message: string }>(`/customers/${phoneOrId}`, {
+      method: 'DELETE',
+    }),
+
+  recordKhataTransaction: (
+    phoneOrId: string,
+    data: {
+      type: 'PAYMENT' | 'DEBIT';
+      amount: number;
+      payment_mode?: string;
+      reference?: string;
+      notes?: string;
+      date?: string;
+    }
+  ) =>
+    request<{
+      success: boolean;
+      message: string;
+      transaction: KhataTransaction;
+      customer: Customer;
+    }>(`/customers/${phoneOrId}/transactions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   saveCustomer: (customerData: Partial<Customer>) =>
     request<{ success: boolean; message: string; customer: Customer }>('/customers', {

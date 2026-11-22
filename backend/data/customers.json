@@ -40,12 +40,12 @@
     "phone": "+91 98888 77665",
     "whatsapp": "919888877665",
     "address": "Site #12, Siddapu Road, Sadashivpet",
-    "total_purchases": 24640.0,
-    "total_invoices": 2,
+    "total_purchases": 36960.0,
+    "total_invoices": 3,
     "outstanding_due": 0.0,
     "_id": "709d51c3-938c-4911-99b6-299312798101",
     "created_at": "2026-11-22T10:58:45.525710",
-    "updated_at": "2026-11-22T11:53:33.227058"
+    "updated_at": "2026-11-22T12:18:14.308283"
   },
   {
     "name": "bharath",
