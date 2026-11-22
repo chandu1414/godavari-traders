@@ -25,7 +25,7 @@ def seed_database():
             "email": "owner@godavaritraders.com",
             "full_name": "Godavari Traders Owner",
             "role": "admin",
-            "phone": "+91 98480 22334",
+            "phone": "+91 8555958488",
             "password": hash_password("Godavari@2026"),
             "is_active": True,
             "created_at": datetime.utcnow().isoformat()
@@ -40,7 +40,7 @@ def seed_database():
             "email": "billing@godavaritraders.com",
             "full_name": "Shop Billing Desk",
             "role": "cashier",
-            "phone": "+91 98480 22335",
+            "phone": "+91 8555958488",
             "password": hash_password("Billing@2026"),
             "is_active": True,
             "created_at": datetime.utcnow().isoformat()
