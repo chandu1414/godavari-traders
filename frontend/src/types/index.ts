@@ -154,6 +154,8 @@ export interface User {
   full_name: string;
   role: 'admin' | 'cashier';
   phone?: string;
+  is_active?: boolean;
+  created_at?: string;
 }
 
 export interface DashboardMetrics {

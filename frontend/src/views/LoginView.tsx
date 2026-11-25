@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Lock, User, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Building2, Lock, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginView: React.FC = () => {
@@ -19,12 +19,6 @@ export const LoginView: React.FC = () => {
       setError(result.message || 'Invalid username or password');
       setIsSubmitting(false);
     }
-  };
-
-  const handleQuickFill = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setError(null);
   };
 
   return (
@@ -102,38 +96,6 @@ export const LoginView: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-3">
-              Quick Login Demo Access
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin', 'Godavari@2026')}
-                className="p-2.5 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-xl text-left transition flex items-center space-x-2"
-              >
-                <ShieldCheck className="w-4 h-4 text-brand-900 shrink-0" />
-                <div className="truncate">
-                  <p className="text-xs font-bold text-brand-950 truncate">Shop Owner</p>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">admin</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickFill('cashier', 'Billing@2026')}
-                className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition flex items-center space-x-2"
-              >
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <div className="truncate">
-                  <p className="text-xs font-bold text-slate-900 truncate">Billing Staff</p>
-                  <p className="text-[10px] text-slate-500 font-mono truncate">cashier</p>
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}

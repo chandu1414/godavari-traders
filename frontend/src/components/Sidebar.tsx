@@ -27,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate }) => 
     { id: 'invoices', label: 'Invoice History', icon: FileText },
     { id: 'customers', label: 'Customer Ledger (Khata)', icon: Users },
     { id: 'reports', label: 'Sales & Reports', icon: BarChart3 },
-    ...(isAdmin ? [{ id: 'settings', label: 'Edit Shop & Owner Info', icon: Settings }] : []),
+    { id: 'settings', label: isAdmin ? 'Shop & Account Settings' : 'Account & Password', icon: Settings },
   ];
 
   return (

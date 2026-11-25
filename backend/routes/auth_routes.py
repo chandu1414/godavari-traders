@@ -104,6 +104,9 @@ def create_staff_user():
     if not username or not password or not full_name:
         return jsonify({"success": False, "message": "Username, password and full name are required."}), 400
 
+    if len(password) < 6:
+        return jsonify({"success": False, "message": "Password must be at least 6 characters long."}), 400
+
     users_col = get_db().get_collection("users")
     if users_col.find_one({"username": username}):
         return jsonify({"success": False, "message": "Username is already taken."}), 400
@@ -112,10 +115,71 @@ def create_staff_user():
         "username": username,
         "email": data.get("email", f"{username}@godavaritraders.com").strip().lower(),
         "full_name": full_name,
-        "role": role,
-        "phone": data.get("phone", ""),
+        "role": role if role in ("admin", "cashier") else "cashier",
+        "phone": data.get("phone", "").strip(),
         "password": hash_password(password),
         "is_active": True
     }
     user_id = users_col.insert_one(new_user)
     return jsonify({"success": True, "message": f"User {username} created successfully.", "user_id": user_id}), 201
+
+
+@auth_bp.route("/users/<user_id>", methods=["PUT"])
+@admin_required
+def update_user_account(user_id):
+    data = request.get_json() or {}
+    users_col = get_db().get_collection("users")
+    target = users_col.find_one({"_id": user_id})
+    if not target:
+        return jsonify({"success": False, "message": "User account not found."}), 404
+
+    update_fields = {}
+    if "username" in data:
+        new_username = str(data["username"]).strip()
+        if not new_username:
+            return jsonify({"success": False, "message": "Username cannot be empty."}), 400
+        existing = users_col.find_one({"username": new_username})
+        if existing and existing.get("_id") != target.get("_id"):
+            return jsonify({"success": False, "message": "Username is already taken."}), 409
+        update_fields["username"] = new_username
+
+    if "full_name" in data and str(data["full_name"]).strip():
+        update_fields["full_name"] = str(data["full_name"]).strip()
+    if "email" in data:
+        update_fields["email"] = str(data["email"]).strip().lower()
+    if "phone" in data:
+        update_fields["phone"] = str(data["phone"]).strip()
+
+    is_self = target.get("_id") == request.current_user.get("_id")
+    if "role" in data and data["role"] in ("admin", "cashier"):
+        if is_self and data["role"] != "admin":
+            return jsonify({"success": False, "message": "You cannot remove your own admin role."}), 400
+        update_fields["role"] = data["role"]
+
+    if "is_active" in data:
+        if is_self and not bool(data["is_active"]):
+            return jsonify({"success": False, "message": "You cannot deactivate your own active account."}), 400
+        update_fields["is_active"] = bool(data["is_active"])
+
+    new_password = data.get("new_password", "")
+    if new_password:
+        if len(new_password) < 6:
+            return jsonify({"success": False, "message": "New password must be at least 6 characters long."}), 400
+        update_fields["password"] = hash_password(new_password)
+
+    if not update_fields:
+        return jsonify({"success": False, "message": "No valid fields provided to update."}), 400
+
+    users_col.update_one({"_id": target["_id"]}, {"$set": update_fields})
+    updated = users_col.find_one({"_id": target["_id"]})
+    sanitized = {
+        "id": updated["_id"],
+        "username": updated.get("username"),
+        "email": updated.get("email"),
+        "full_name": updated.get("full_name"),
+        "role": updated.get("role"),
+        "phone": updated.get("phone"),
+        "is_active": updated.get("is_active", True),
+        "created_at": updated.get("created_at"),
+    }
+    return jsonify({"success": True, "message": f"Account '{sanitized['username']}' updated successfully.", "user": sanitized})

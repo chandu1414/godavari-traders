@@ -57,6 +57,24 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  getUsers: () =>
+    request<{ success: boolean; users: User[] }>('/auth/users'),
+
+  createUser: (data: { username: string; password: string; full_name: string; role: 'admin' | 'cashier'; phone?: string; email?: string }) =>
+    request<{ success: boolean; message: string; user_id: string }>('/auth/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateUser: (
+    userId: string,
+    data: { username?: string; full_name?: string; phone?: string; email?: string; role?: 'admin' | 'cashier'; is_active?: boolean; new_password?: string }
+  ) =>
+    request<{ success: boolean; message: string; user: User }>(`/auth/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
   // Products
   getProducts: (params?: { category?: string; search?: string; active_only?: boolean; low_stock?: boolean }) => {
     const query = new URLSearchParams();
