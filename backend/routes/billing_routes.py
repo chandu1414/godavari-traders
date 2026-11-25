@@ -200,12 +200,17 @@ def create_invoice():
             "district": shop_settings.get("district"),
             "state": shop_settings.get("state"),
             "pincode": shop_settings.get("pincode"),
+            "state_code": shop_settings.get("state_code"),
             "phone": shop_settings.get("phone"),
+            "whatsapp_number": shop_settings.get("whatsapp_number"),
+            "email": shop_settings.get("email"),
             "gstin": shop_settings.get("gstin"),
+            "pan_number": shop_settings.get("pan_number"),
             "upi_id": shop_settings.get("upi_id"),
             "bank_name": shop_settings.get("bank_name"),
             "bank_account_no": shop_settings.get("bank_account_no"),
             "bank_ifsc": shop_settings.get("bank_ifsc"),
+            "bank_branch": shop_settings.get("bank_branch"),
             "footer_notes": shop_settings.get("footer_notes"),
             "terms_conditions": shop_settings.get("terms_conditions")
         }

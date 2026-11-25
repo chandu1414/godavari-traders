@@ -20,10 +20,11 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
     settings_col = get_db().get_collection("settings")
     settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
     shop_name = settings.get("shop_name", "GODAVARI TRADERS")
-    contact_phone = settings.get("phone") or settings.get("whatsapp_number") or "+91 98480 22334"
+    owner_name = settings.get("owner_name", "")
+    contact_phone = settings.get("phone") or settings.get("whatsapp_number") or ""
     tagline = settings.get("tagline", "Wholesale & Retail Building Materials")
     shop_city = settings.get("city", "Sadashivpet")
-    address = [settings.get("address_line1"), settings.get("city")].filter(None) if hasattr([settings.get("address_line1")], 'filter') else ", ".join(filter(None, [settings.get("address_line1"), settings.get("city")]))
+    address = ", ".join(filter(None, [settings.get("address_line1"), settings.get("city"), settings.get("state")]))
 
     items_text = []
     for it in invoice.get("items", [])[:5]:
@@ -77,7 +78,8 @@ def generate_whatsapp_message(invoice, public_base_url="http://localhost:5173"):
         f"🔗 *View & Download Official PDF Bill:*\n"
         f"{view_url}\n\n"
         f"Thank you for choosing {shop_name}!\n"
-        f"📞 Contact / Support: {contact_phone}"
+        + (f"Proprietor: {owner_name}\n" if owner_name else "")
+        + (f"📞 Contact / Support: {contact_phone}" if contact_phone else "")
     )
 
     return msg, view_url

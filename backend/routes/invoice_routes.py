@@ -5,6 +5,25 @@ from auth import login_required
 
 invoice_bp = Blueprint("invoices", __name__)
 
+
+def _merge_live_shop_snapshot(inv, live_settings):
+    if not inv or not live_settings:
+        return inv
+    snapshot = dict(inv.get("shop_snapshot") or {})
+    sync_keys = [
+        "shop_name", "owner_name", "tagline", "address_line1", "address_line2",
+        "city", "district", "state", "pincode", "state_code", "phone",
+        "whatsapp_number", "email", "gstin", "pan_number", "upi_id",
+        "bank_name", "bank_account_no", "bank_ifsc", "bank_branch",
+        "footer_notes", "terms_conditions"
+    ]
+    for key in sync_keys:
+        val = live_settings.get(key)
+        if val not in (None, ""):
+            snapshot[key] = val
+    inv["shop_snapshot"] = snapshot
+    return inv
+
 @invoice_bp.route("", methods=["GET"])
 @login_required
 def get_invoices():
@@ -57,6 +76,11 @@ def get_invoices():
 
         filtered.append(inv)
 
+    settings_col = get_db().get_collection("settings")
+    live_settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
+    for inv in filtered:
+        _merge_live_shop_snapshot(inv, live_settings)
+
     return jsonify({"success": True, "count": len(filtered), "invoices": filtered})
 
 @invoice_bp.route("/<identifier>", methods=["GET"])
@@ -66,6 +90,9 @@ def get_invoice(identifier):
     inv = invoices_col.find_one({"$or": [{"_id": identifier}, {"invoice_number": identifier}]})
     if not inv:
         return jsonify({"success": False, "message": "Invoice not found."}), 404
+    settings_col = get_db().get_collection("settings")
+    live_settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
+    _merge_live_shop_snapshot(inv, live_settings)
     return jsonify({"success": True, "invoice": inv})
 
 @invoice_bp.route("/<identifier>/payment", methods=["PATCH"])
@@ -148,6 +175,10 @@ def view_public_invoice(token):
     inv = invoices_col.find_one({"public_token": token})
     if not inv:
         return jsonify({"success": False, "message": "Invalid or expired invoice link."}), 404
+
+    settings_col = get_db().get_collection("settings")
+    live_settings = settings_col.find_one({"_id": "shop_settings_default"}) or {}
+    _merge_live_shop_snapshot(inv, live_settings)
 
     # Sanitize for public display
     public_view = {

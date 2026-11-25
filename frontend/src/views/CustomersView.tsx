@@ -90,6 +90,12 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice, sho
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (propShopSettings) {
+      setShopSettings(propShopSettings);
+    }
+  }, [propShopSettings]);
+
+  useEffect(() => {
     loadCustomers();
     loadSettings();
   }, [filterType]);
@@ -356,28 +362,39 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ onViewInvoice, sho
     }
   };
 
-  // Send WhatsApp Reminder with DYNAMIC SHOP DETAILS
-  const handleSendWhatsAppReminder = (c: Customer) => {
+  // Send WhatsApp Reminder with LIVE DYNAMIC SHOP DETAILS
+  const handleSendWhatsAppReminder = async (c: Customer) => {
     const due = c.outstanding_due || 0;
     const cleanPhone = (c.whatsapp || c.phone || '').replace(/[^0-9]/g, '');
     const targetPhone = cleanPhone.startsWith('91') && cleanPhone.length > 10 ? cleanPhone : `91${cleanPhone.replace(/^0+/, '')}`;
 
-    // Read live shop settings (dynamic, never hardcoded!)
-    const shopName = shopSettings?.shop_name || 'GODAVARI TRADERS';
-    const city = shopSettings?.city || 'Sadashivpet';
-    const address = [shopSettings?.address_line1, shopSettings?.address_line2, shopSettings?.city].filter(Boolean).join(', ') || 'Siddapu Road, Sadashivpet';
-    const upiId = shopSettings?.upi_id || 'godavaritraders@okaxis';
-    const ownerName = shopSettings?.owner_name || 'Prathik Yadav';
-    const shopContact = shopSettings?.phone || shopSettings?.whatsapp_number || '+91 98480 22334';
+    // Always pull latest saved settings so updated owner number / UPI appears immediately
+    let liveSettings = shopSettings || propShopSettings || null;
+    try {
+      const res = await api.getSettings();
+      if (res.success && res.settings) {
+        liveSettings = res.settings;
+        setShopSettings(res.settings);
+      }
+    } catch {
+      // Fall back to already-loaded settings if offline
+    }
 
-    const text = 
+    const shopName = liveSettings?.shop_name || 'GODAVARI TRADERS';
+    const city = liveSettings?.city || 'Sadashivpet';
+    const address = [liveSettings?.address_line1, liveSettings?.address_line2, liveSettings?.city].filter(Boolean).join(', ') || 'Siddapu Road, Sadashivpet';
+    const upiId = liveSettings?.upi_id || 'godavaritraders@okaxis';
+    const ownerName = liveSettings?.owner_name || '';
+    const shopContact = liveSettings?.phone || liveSettings?.whatsapp_number || '';
+
+    const text =
       `🙏 *Namaste ${c.name} garu,*\n\n` +
       `This is a gentle payment reminder from *${shopName}*, ${city}.\n\n` +
       `📌 *Current Khata Balance Due:* ₹${due.toLocaleString('en-IN')}\n\n` +
       `You can clear your payment via UPI to:\n` +
       `👉 *UPI ID:* ${upiId}\n` +
       `Or visit our shop at ${address}.\n\n` +
-      `For bills or queries: ${shopContact}\n` +
+      (shopContact ? `For bills or queries: ${shopContact}\n` : '') +
       `_${ownerName ? `– ${ownerName}, ` : ''}${shopName}_`;
 
     window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`, '_blank');

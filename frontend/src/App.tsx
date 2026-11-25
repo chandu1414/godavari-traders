@@ -128,6 +128,7 @@ const AppContent: React.FC = () => {
       {/* Invoice Viewer / Printable Modal */}
       <InvoiceModal
         invoice={selectedInvoice}
+        shopSettings={shopSettings}
         onClose={() => setSelectedInvoice(null)}
       />
     </div>
