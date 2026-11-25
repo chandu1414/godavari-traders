@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from database import get_db
@@ -35,6 +35,14 @@ def create_app():
     app.register_blueprint(setting_bp, url_prefix="/api/settings")
     app.register_blueprint(sharing_bp, url_prefix="/api/sharing")
 
+    @app.after_request
+    def add_no_cache_headers(response):
+        if request.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
     @app.route("/api/health", methods=["GET"])
     def health_check():
         db = get_db()
@@ -42,6 +50,8 @@ def create_app():
             "status": "healthy",
             "service": "Godavari Traders API",
             "is_mongo": db.is_mongo,
+            "storage": "mongodb" if db.is_mongo else "json_local",
+            "mongo_error": db.mongo_error,
             "version": "1.0.0"
         })
 

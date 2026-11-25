@@ -40,7 +40,7 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (

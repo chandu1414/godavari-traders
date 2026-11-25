@@ -75,6 +75,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onSaved }) => {
 
       const res = await api.updateSettings(settings);
       if (res.success) {
+        if (res.settings) {
+          setSettings((prev) => ({ ...prev, ...res.settings }));
+        }
         setSaveSuccess(true);
         if (onSaved) onSaved();
         setTimeout(() => setSaveSuccess(false), 3500);

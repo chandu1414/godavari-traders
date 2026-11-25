@@ -12,8 +12,13 @@ def seed_database():
     customers_col = db.get_collection("customers")
     invoices_col = db.get_collection("invoices")
 
+    # Determine whether this is a fresh, never-seeded database
+    already_seeded = bool(settings_col.find_one({"_id": "seed_meta_v1"}))
+    has_existing_shop = bool(settings_col.find_one({"_id": "shop_settings_default"}))
+    is_fresh_install = not already_seeded and not has_existing_shop
+
     # 1. Seed Shop Settings
-    if not settings_col.find_one({"_id": "shop_settings_default"}):
+    if not has_existing_shop:
         settings_col.insert_one(DEFAULT_SHOP_SETTINGS)
         print("[Seed] Created default shop settings for Godavari Traders.")
 
@@ -48,8 +53,8 @@ def seed_database():
         users_col.insert_one(staff_user)
         print("[Seed] Seeded Cashier User: cashier / Billing@2026")
 
-    # 3. Seed Realistic Construction Materials Catalogue
-    if products_col.count_documents({}) == 0:
+    # 3. Seed Realistic Construction Materials Catalogue (only on fresh install)
+    if is_fresh_install and products_col.count_documents({}) == 0:
         sample_products = [
             # Cement
             {
@@ -289,8 +294,8 @@ def seed_database():
         products_col.insert_many(sample_products)
         print(f"[Seed] Added {len(sample_products)} construction materials to product catalogue.")
 
-    # 4. Seed Sample Customers
-    if customers_col.count_documents({}) == 0:
+    # 4. Seed Sample Customers (only on fresh install so deleted customers never reappear)
+    if is_fresh_install and customers_col.count_documents({}) == 0:
         sample_customers = [
             {
                 "name": "M. Satyanarayana (Contractor)",
@@ -326,8 +331,8 @@ def seed_database():
         customers_col.insert_many(sample_customers)
         print(f"[Seed] Added {len(sample_customers)} sample customers.")
 
-    # 5. Seed Initial Real Recent Invoices
-    if invoices_col.count_documents({}) == 0:
+    # 5. Seed Initial Real Recent Invoices (only on fresh install)
+    if is_fresh_install and invoices_col.count_documents({}) == 0:
         now = datetime.utcnow()
         sample_invoices = [
             {
@@ -509,6 +514,13 @@ def seed_database():
         # Update next invoice number in settings
         settings_col.update_one({"_id": "shop_settings_default"}, {"$set": {"next_invoice_number": 1004}})
         print(f"[Seed] Added {len(sample_invoices)} initial verified invoices.")
+
+    if not already_seeded:
+        settings_col.update_one(
+            {"_id": "seed_meta_v1"},
+            {"$set": {"seeded_at": datetime.utcnow().isoformat()}},
+            upsert=True,
+        )
 
 if __name__ == "__main__":
     seed_database()

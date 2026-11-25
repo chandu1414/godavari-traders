@@ -1,6 +1,10 @@
 import os
 
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "godavari_traders_super_secret_jwt_key_2026_secure")
+SECRET_KEY = (
+    os.environ.get("JWT_SECRET_KEY")
+    or os.environ.get("JWT_SECRET")
+    or "godavari_traders_super_secret_jwt_key_2026_secure"
+)
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24 * 7  # 7 days session
 

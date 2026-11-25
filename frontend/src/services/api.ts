@@ -27,6 +27,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
+    cache: 'no-store',
     headers,
   });
 

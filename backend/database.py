@@ -226,40 +226,99 @@ class MongoCollectionWrapper:
         self.raw = raw_collection
         self.name = raw_collection.name
 
-    def find(self, query: Optional[Dict[str, Any]] = None, sort: Optional[List[tuple]] = None) -> List[Dict[str, Any]]:
-        query = query or {}
-        cursor = self.raw.find(query)
-        if sort:
-            cursor = cursor.sort(sort)
-        docs = list(cursor)
-        for d in docs:
-            if "_id" in d and hasattr(d["_id"], "__str__") and not isinstance(d["_id"], str):
-                d["_id"] = str(d["_id"])
-        return docs
+    @staticmethod
+    def _normalize_query(query: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        if not query:
+            return {}
+        try:
+            from bson import ObjectId
+        except Exception:
+            ObjectId = None
 
-    def find_one(self, query: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
-        query = query or {}
-        d = self.raw.find_one(query)
-        if d and "_id" in d and hasattr(d["_id"], "__str__") and not isinstance(d["_id"], str):
+        normalized: Dict[str, Any] = {}
+        for key, val in query.items():
+            if key in ("$or", "$and") and isinstance(val, list):
+                normalized[key] = [MongoCollectionWrapper._normalize_query(subq) for subq in val]
+            elif key == "_id" and isinstance(val, str) and ObjectId is not None and ObjectId.is_valid(val):
+                normalized[key] = {"$in": [val, ObjectId(val)]}
+            else:
+                normalized[key] = val
+        return normalized
+
+    @staticmethod
+    def _serialize_doc(d: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        if d is None:
+            return None
+        if "_id" in d and not isinstance(d["_id"], str):
             d["_id"] = str(d["_id"])
         return d
 
+    def find(self, query: Optional[Dict[str, Any]] = None, sort: Optional[List[tuple]] = None, limit: int = 0) -> List[Dict[str, Any]]:
+        norm_query = self._normalize_query(query)
+        cursor = self.raw.find(norm_query)
+        if sort:
+            cursor = cursor.sort(sort)
+        if limit > 0:
+            cursor = cursor.limit(limit)
+        docs = list(cursor)
+        for d in docs:
+            self._serialize_doc(d)
+        return docs
+
+    def find_one(self, query: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+        norm_query = self._normalize_query(query)
+        d = self.raw.find_one(norm_query)
+        return self._serialize_doc(d)
+
     def insert_one(self, doc: Dict[str, Any]) -> str:
+        now = datetime.utcnow().isoformat()
         d = dict(doc)
         if "_id" not in d:
             d["_id"] = str(uuid.uuid4())
+        if "created_at" not in d:
+            d["created_at"] = now
+        if "updated_at" not in d:
+            d["updated_at"] = now
         res = self.raw.insert_one(d)
         doc["_id"] = str(res.inserted_id)
         return doc["_id"]
 
-    def update_one(self, query: Dict[str, Any], update: Dict[str, Any], upsert: bool = False):
-        return self.raw.update_one(query, update, upsert=upsert)
+    def insert_many(self, documents: List[Dict[str, Any]]) -> List[str]:
+        if not documents:
+            return []
+        now = datetime.utcnow().isoformat()
+        prepared = []
+        for doc in documents:
+            d = dict(doc)
+            if "_id" not in d:
+                d["_id"] = str(uuid.uuid4())
+            if "created_at" not in d:
+                d["created_at"] = now
+            if "updated_at" not in d:
+                d["updated_at"] = now
+            prepared.append(d)
+        res = self.raw.insert_many(prepared)
+        return [str(inserted_id) for inserted_id in res.inserted_ids]
 
-    def delete_one(self, query: Dict[str, Any]):
-        return self.raw.delete_one(query)
+    def update_one(self, query: Dict[str, Any], update: Dict[str, Any], upsert: bool = False) -> bool:
+        norm_query = self._normalize_query(query)
+        now = datetime.utcnow().isoformat()
+        clean_update = dict(update)
+        set_fields = dict(clean_update.get("$set", {}))
+        set_fields.pop("_id", None)
+        set_fields["updated_at"] = now
+        clean_update["$set"] = set_fields
+        res = self.raw.update_one(norm_query, clean_update, upsert=upsert)
+        return bool(res.matched_count > 0 or res.upserted_id is not None)
+
+    def delete_one(self, query: Dict[str, Any]) -> bool:
+        norm_query = self._normalize_query(query)
+        res = self.raw.delete_one(norm_query)
+        return bool(res.deleted_count > 0)
 
     def count_documents(self, query: Optional[Dict[str, Any]] = None) -> int:
-        return self.raw.count_documents(query or {})
+        norm_query = self._normalize_query(query)
+        return self.raw.count_documents(norm_query)
 
 
 class DatabaseManager:
@@ -268,24 +327,36 @@ class DatabaseManager:
         self.mongo_client = None
         self.db = None
         self.is_mongo = False
+        self.mongo_error: Optional[str] = None
         self._collections: Dict[str, Any] = {}
         self._init_connection()
 
     def _init_connection(self):
         mongo_uri = os.environ.get("MONGO_URI")
         if mongo_uri:
-            try:
-                import pymongo
-                client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=8000)
-                client.server_info()  # trigger connection check
-                self.mongo_client = client
-                db_name = os.environ.get("MONGO_DB_NAME", "godavari_traders")
-                self.db = client[db_name]
-                self.is_mongo = True
-                print(f"[Database] Connected successfully to MongoDB: {db_name}")
-                return
-            except Exception as e:
-                print(f"[Database] MongoDB connection failed ({e}). Falling back to JSON document store.")
+            last_error: Optional[Exception] = None
+            for attempt in range(2):
+                try:
+                    import pymongo
+                    client = pymongo.MongoClient(
+                        mongo_uri,
+                        serverSelectionTimeoutMS=10000,
+                        connectTimeoutMS=10000,
+                    )
+                    client.server_info()  # trigger connection check
+                    self.mongo_client = client
+                    db_name = os.environ.get("MONGO_DB_NAME", "godavari_traders")
+                    self.db = client[db_name]
+                    self.is_mongo = True
+                    self.mongo_error = None
+                    print(f"[Database] Connected successfully to MongoDB: {db_name}")
+                    return
+                except Exception as e:
+                    last_error = e
+                    if attempt == 0:
+                        time.sleep(1)
+            self.mongo_error = str(last_error) if last_error else "Unknown MongoDB error"
+            print(f"[Database] MongoDB connection failed ({self.mongo_error}). Falling back to JSON document store.")
 
         print(f"[Database] Using robust persistent JSON document store at: {DATA_DIR}")
         self.is_mongo = False
